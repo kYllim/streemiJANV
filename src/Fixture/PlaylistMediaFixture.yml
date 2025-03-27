@@ -1,5 +1,0 @@
-App\Entity\PlaylistMedia:
-  playlist_media_{1..10}:
-    playlist: '@playlist{1..5}'
-    media: '@media{1..10}'
-    addedAt: <dateTimeThisMonth()>

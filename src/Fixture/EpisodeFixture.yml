@@ -1,6 +1,0 @@
-App\Entity\Episode:
-  episode_{1..10}:
-    season: '@season{1..5}'
-    title: <sentence(3)>
-    duration: <time()>
-    releaseDate: <date()>

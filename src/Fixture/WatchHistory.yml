@@ -1,7 +1,0 @@
-App\Entity\WatchHistory:
-  watch_history_{1..15}:
-    last_watched: <dateTimeThisYear()>
-    number_of_views: <numberBetween(1,50)>
-    user_watch_history: '@user_<numberBetween(1,10)>'
-    media: '@media_<numberBetween(1,10)>'
-

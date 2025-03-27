@@ -7,6 +7,9 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -17,7 +20,7 @@ class User
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 255)]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
@@ -26,42 +29,55 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
+    private string $plainPassword = '';
+
     #[ORM\Column(enumType: UserAccountStatusEnum::class)]
-    private ?UserAccountStatusEnum $accountStatus = null;
+    private ?UserAccountStatusEnum $accountStatus = UserAccountStatusEnum::INACTIVE;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
     private ?Subscription $currentSubscription = null;
 
-
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'userComments')]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'publisher')]
     private Collection $comments;
+
+    #[ORM\Column(length: 255)]
+    private ?string $profilePicture = '';
 
     /**
      * @var Collection<int, Playlist>
      */
-    #[ORM\OneToMany(targetEntity: Playlist::class, mappedBy: 'userPlaylist')]
+    #[ORM\OneToMany(targetEntity: Playlist::class, mappedBy: 'creator')]
     private Collection $playlists;
 
     /**
      * @var Collection<int, PlaylistSubscription>
      */
-    #[ORM\OneToMany(targetEntity: PlaylistSubscription::class, mappedBy: 'userPlaylistSubscription')]
+    #[ORM\OneToMany(targetEntity: PlaylistSubscription::class, mappedBy: 'subscriber')]
     private Collection $playlistSubscriptions;
 
     /**
      * @var Collection<int, SubscriptionHistory>
      */
-    #[ORM\OneToMany(targetEntity: SubscriptionHistory::class, mappedBy: 'userSubscriptionHistory')]
+    #[ORM\OneToMany(targetEntity: SubscriptionHistory::class, mappedBy: 'subscriber')]
     private Collection $subscriptionHistories;
 
     /**
      * @var Collection<int, WatchHistory>
      */
-    #[ORM\OneToMany(targetEntity: WatchHistory::class, mappedBy: 'userWatchHistory')]
+    #[ORM\OneToMany(targetEntity: WatchHistory::class, mappedBy: 'watcher')]
     private Collection $watchHistories;
+
+    /**
+     * @var Collection<int, Upload>
+     */
+    #[ORM\OneToMany(targetEntity: Upload::class, mappedBy: 'uploadedBy')]
+    private Collection $uploads;
+
+    #[ORM\Column]
+    private array $roles = [];
 
     public function __construct()
     {
@@ -70,6 +86,7 @@ class User
         $this->playlistSubscriptions = new ArrayCollection();
         $this->subscriptionHistories = new ArrayCollection();
         $this->watchHistories = new ArrayCollection();
+        $this->uploads = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -137,10 +154,6 @@ class User
         return $this;
     }
 
-
-
-
-
     /**
      * @return Collection<int, Comment>
      */
@@ -153,7 +166,7 @@ class User
     {
         if (!$this->comments->contains($comment)) {
             $this->comments->add($comment);
-            $comment->setUserComments($this);
+            $comment->setPublisher($this);
         }
 
         return $this;
@@ -163,10 +176,22 @@ class User
     {
         if ($this->comments->removeElement($comment)) {
             // set the owning side to null (unless already changed)
-            if ($comment->getUserComments() === $this) {
-                $comment->setUserComments(null);
+            if ($comment->getPublisher() === $this) {
+                $comment->setPublisher(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getProfilePicture(): ?string
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(string $profilePicture): static
+    {
+        $this->profilePicture = $profilePicture;
 
         return $this;
     }
@@ -183,7 +208,7 @@ class User
     {
         if (!$this->playlists->contains($playlist)) {
             $this->playlists->add($playlist);
-            $playlist->setUserPlaylist($this);
+            $playlist->setCreator($this);
         }
 
         return $this;
@@ -193,8 +218,8 @@ class User
     {
         if ($this->playlists->removeElement($playlist)) {
             // set the owning side to null (unless already changed)
-            if ($playlist->getUserPlaylist() === $this) {
-                $playlist->setUserPlaylist(null);
+            if ($playlist->getCreator() === $this) {
+                $playlist->setCreator(null);
             }
         }
 
@@ -213,7 +238,7 @@ class User
     {
         if (!$this->playlistSubscriptions->contains($playlistSubscription)) {
             $this->playlistSubscriptions->add($playlistSubscription);
-            $playlistSubscription->setUserPlaylistSubscription($this);
+            $playlistSubscription->setSubscriber($this);
         }
 
         return $this;
@@ -223,8 +248,8 @@ class User
     {
         if ($this->playlistSubscriptions->removeElement($playlistSubscription)) {
             // set the owning side to null (unless already changed)
-            if ($playlistSubscription->getUserPlaylistSubscription() === $this) {
-                $playlistSubscription->setUserPlaylistSubscription(null);
+            if ($playlistSubscription->getSubscriber() === $this) {
+                $playlistSubscription->setSubscriber(null);
             }
         }
 
@@ -243,7 +268,7 @@ class User
     {
         if (!$this->subscriptionHistories->contains($subscriptionHistory)) {
             $this->subscriptionHistories->add($subscriptionHistory);
-            $subscriptionHistory->setUserSubscriptionHistory($this);
+            $subscriptionHistory->setSubscriber($this);
         }
 
         return $this;
@@ -253,8 +278,8 @@ class User
     {
         if ($this->subscriptionHistories->removeElement($subscriptionHistory)) {
             // set the owning side to null (unless already changed)
-            if ($subscriptionHistory->getUserSubscriptionHistory() === $this) {
-                $subscriptionHistory->setUserSubscriptionHistory(null);
+            if ($subscriptionHistory->getSubscriber() === $this) {
+                $subscriptionHistory->setSubscriber(null);
             }
         }
 
@@ -273,7 +298,7 @@ class User
     {
         if (!$this->watchHistories->contains($watchHistory)) {
             $this->watchHistories->add($watchHistory);
-            $watchHistory->setUserWatchHistory($this);
+            $watchHistory->setWatcher($this);
         }
 
         return $this;
@@ -283,12 +308,41 @@ class User
     {
         if ($this->watchHistories->removeElement($watchHistory)) {
             // set the owning side to null (unless already changed)
-            if ($watchHistory->getUserWatchHistory() === $this) {
-                $watchHistory->setUserWatchHistory(null);
+            if ($watchHistory->getWatcher() === $this) {
+                $watchHistory->setWatcher(null);
             }
         }
 
         return $this;
     }
 
+    /**
+     * @return Collection<int, Upload>
+     */
+    public function getUploads(): Collection
+    {
+        return $this->uploads;
+    }
+
+    public function addUpload(Upload $upload): static
+    {
+        if (!$this->uploads->contains($upload)) {
+            $this->uploads->add($upload);
+            $upload->setUploadedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUpload(Upload $upload): static
+    {
+        if ($this->uploads->removeElement($upload)) {
+            // set the owning side to null (unless already changed)
+            if ($upload->getUploadedBy() === $this) {
+                $upload->setUploadedBy(null);
+            }
+        }
+
+        return $this;
+    }
 }

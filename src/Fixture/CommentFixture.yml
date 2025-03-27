@@ -1,7 +1,0 @@
-App\Entity\Comment:
-  comment_{1..20}:
-    content: <text(200)>
-    status: <randomElement(["pending", "approved", "rejected"])>
-    user_comments: '@user_<numberBetween(1,10)>'
-    media: '@media_<numberBetween(1,10)>'
-    parent_comment: '<optional(@comment_<numberBetween(1,10)>)>'

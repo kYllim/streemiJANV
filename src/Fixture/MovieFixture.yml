@@ -1,3 +1,0 @@
-App\Entity\Movie:
-  movie_{1..5}:
-    id: '@media{1..5}'

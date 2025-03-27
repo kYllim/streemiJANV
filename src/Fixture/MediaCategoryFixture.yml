@@ -1,4 +1,0 @@
-App\Entity\MediaCategory:
-  media_category_{1..10}:
-    media: '@media{1..10}'
-    category: '@category{1..10}'

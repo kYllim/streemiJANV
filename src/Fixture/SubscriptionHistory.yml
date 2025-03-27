@@ -1,6 +1,0 @@
-App\Entity\SubscriptionHistory:
-  subscription_history_{1..10}:
-    userSubscriptionHistory: '@user{1..10}'
-    subscription: '@subscription{1..5}'
-    startDate: <date()>
-    endDate: <date()>

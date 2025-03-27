@@ -23,34 +23,27 @@ class Comment
     #[ORM\Column(enumType: CommentStatusEnum::class)]
     private ?CommentStatusEnum $status = null;
 
-    #[ORM\ManyToOne(inversedBy: 'comments')]
-    private ?User $userComments = null;
-
-    #[ORM\ManyToOne(inversedBy: 'comments')]
-    private ?Media $media = null;
-
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'comments')]
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childComments')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?self $parentComment = null;
 
     /**
      * @var Collection<int, self>
      */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parentComment')]
-    private Collection $comments;
+    private Collection $childComments;
 
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childComment')]
-    private ?self $comment = null;
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $publisher = null;
 
-    /**
-     * @var Collection<int, self>
-     */
-    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'comment')]
-    private Collection $childComment;
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Media $media = null;
 
     public function __construct()
     {
-        $this->comments = new ArrayCollection();
-        $this->childComment = new ArrayCollection();
+        $this->childComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -82,30 +75,6 @@ class Comment
         return $this;
     }
 
-    public function getUserComments(): ?User
-    {
-        return $this->userComments;
-    }
-
-    public function setUserComments(?User $userComments): static
-    {
-        $this->userComments = $userComments;
-
-        return $this;
-    }
-
-    public function getMedia(): ?Media
-    {
-        return $this->media;
-    }
-
-    public function setMedia(?Media $media): static
-    {
-        $this->media = $media;
-
-        return $this;
-    }
-
     public function getParentComment(): ?self
     {
         return $this->parentComment;
@@ -121,58 +90,16 @@ class Comment
     /**
      * @return Collection<int, self>
      */
-    public function getComments(): Collection
+    public function getChildComments(): Collection
     {
-        return $this->comments;
-    }
-
-    public function addComment(self $comment): static
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setParentComment($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(self $comment): static
-    {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getParentComment() === $this) {
-                $comment->setParentComment(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getComment(): ?self
-    {
-        return $this->comment;
-    }
-
-    public function setComment(?self $comment): static
-    {
-        $this->comment = $comment;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, self>
-     */
-    public function getChildComment(): Collection
-    {
-        return $this->childComment;
+        return $this->childComments;
     }
 
     public function addChildComment(self $childComment): static
     {
-        if (!$this->childComment->contains($childComment)) {
-            $this->childComment->add($childComment);
-            $childComment->setComment($this);
+        if (!$this->childComments->contains($childComment)) {
+            $this->childComments->add($childComment);
+            $childComment->setParentComment($this);
         }
 
         return $this;
@@ -180,14 +107,37 @@ class Comment
 
     public function removeChildComment(self $childComment): static
     {
-        if ($this->childComment->removeElement($childComment)) {
+        if ($this->childComments->removeElement($childComment)) {
             // set the owning side to null (unless already changed)
-            if ($childComment->getComment() === $this) {
-                $childComment->setComment(null);
+            if ($childComment->getParentComment() === $this) {
+                $childComment->setParentComment(null);
             }
         }
 
         return $this;
     }
 
+    public function getPublisher(): ?User
+    {
+        return $this->publisher;
+    }
+
+    public function setPublisher(?User $publisher): static
+    {
+        $this->publisher = $publisher;
+
+        return $this;
+    }
+
+    public function getMedia(): ?Media
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?Media $media): static
+    {
+        $this->media = $media;
+
+        return $this;
+    }
 }

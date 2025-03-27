@@ -15,19 +15,18 @@ class Season
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $seasonNumber = null;
+    #[ORM\Column(length: 255)]
+    private ?string $number = null;
+
+    #[ORM\ManyToOne(inversedBy: 'seasons')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Serie $serie = null;
 
     /**
      * @var Collection<int, Episode>
      */
     #[ORM\OneToMany(targetEntity: Episode::class, mappedBy: 'season')]
     private Collection $episodes;
-
-    #[ORM\ManyToOne(inversedBy: 'seasons')]
-    private ?Serie $serie = null;
-
-
 
     public function __construct()
     {
@@ -39,14 +38,26 @@ class Season
         return $this->id;
     }
 
-    public function getSeasonNumber(): ?int
+    public function getNumber(): ?string
     {
-        return $this->seasonNumber;
+        return $this->number;
     }
 
-    public function setSeasonNumber(int $seasonNumber): static
+    public function setNumber(string $number): static
     {
-        $this->seasonNumber = $seasonNumber;
+        $this->number = $number;
+
+        return $this;
+    }
+
+    public function getSerie(): ?Serie
+    {
+        return $this->serie;
+    }
+
+    public function setSerie(?Serie $serie): static
+    {
+        $this->serie = $serie;
 
         return $this;
     }
@@ -80,22 +91,4 @@ class Season
 
         return $this;
     }
-
-    public function getSerie(): ?Serie
-    {
-        return $this->serie;
-    }
-
-    public function setSerie(?Serie $serie): static
-    {
-        $this->serie = $serie;
-
-        return $this;
-    }
-
-
-
-
-
-
 }

@@ -16,15 +16,15 @@ class Language
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private ?string $nom = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 3)]
     private ?string $code = null;
 
     /**
      * @var Collection<int, Media>
      */
-    #[ORM\ManyToMany(targetEntity: Media::class, mappedBy: 'mediaLanguages')]
+    #[ORM\ManyToMany(targetEntity: Media::class, mappedBy: 'languages')]
     private Collection $medias;
 
     public function __construct()
@@ -37,14 +37,14 @@ class Language
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getNom(): ?string
     {
-        return $this->name;
+        return $this->nom;
     }
 
-    public function setName(string $name): static
+    public function setNom(string $nom): static
     {
-        $this->name = $name;
+        $this->nom = $nom;
 
         return $this;
     }
@@ -73,7 +73,7 @@ class Language
     {
         if (!$this->medias->contains($media)) {
             $this->medias->add($media);
-            $media->addMediaLanguage($this);
+            $media->addLanguage($this);
         }
 
         return $this;
@@ -82,7 +82,7 @@ class Language
     public function removeMedia(Media $media): static
     {
         if ($this->medias->removeElement($media)) {
-            $media->removeMediaLanguage($this);
+            $media->removeLanguage($this);
         }
 
         return $this;

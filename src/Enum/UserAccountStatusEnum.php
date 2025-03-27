@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Enum;
 
 enum UserAccountStatusEnum: string
@@ -7,7 +9,5 @@ enum UserAccountStatusEnum: string
     case ACTIVE = 'active';
     case INACTIVE = 'inactive';
     case BLOCKED = 'blocked';
-    case BANNED = 'banned';
-
-
+    CASE BANNED = 'banned';
 }

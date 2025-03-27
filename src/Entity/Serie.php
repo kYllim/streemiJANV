@@ -10,10 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SerieRepository::class)]
 class Serie extends Media
 {
-
-
-
-
     /**
      * @var Collection<int, Season>
      */
@@ -22,6 +18,7 @@ class Serie extends Media
 
     public function __construct()
     {
+        parent::__construct();
         $this->seasons = new ArrayCollection();
     }
 

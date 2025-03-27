@@ -15,14 +15,14 @@ class Subscription
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     #[ORM\Column]
     private ?int $price = null;
 
     #[ORM\Column]
-    private ?int $durationInMonths = null;
+    private ?int $duration = null;
 
     /**
      * @var Collection<int, User>
@@ -71,14 +71,14 @@ class Subscription
         return $this;
     }
 
-    public function getDurationInMonths(): ?int
+    public function getDuration(): ?int
     {
-        return $this->durationInMonths;
+        return $this->duration;
     }
 
-    public function setDurationInMonths(int $durationInMonths): static
+    public function setDuration(int $duration): static
     {
-        $this->durationInMonths = $durationInMonths;
+        $this->duration = $duration;
 
         return $this;
     }
