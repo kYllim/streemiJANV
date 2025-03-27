@@ -20,14 +20,13 @@ class WatchHistory
     #[ORM\Column]
     private ?int $numberOfViews = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?User $userWatchHistory = null;
 
     #[ORM\ManyToOne(inversedBy: 'watchHistories')]
     private ?Media $media = null;
 
     #[ORM\ManyToOne(inversedBy: 'watchHistories')]
-    private ?User $userHistory = null;
+    private ?User $userWatchHistory = null;
+
 
     public function getId(): ?int
     {
@@ -58,18 +57,6 @@ class WatchHistory
         return $this;
     }
 
-    public function getUserWatchHistory(): ?User
-    {
-        return $this->userWatchHistory;
-    }
-
-    public function setUserWatchHistory(?User $userWatchHistory): static
-    {
-        $this->userWatchHistory = $userWatchHistory;
-
-        return $this;
-    }
-
     public function getMedia(): ?Media
     {
         return $this->media;
@@ -82,15 +69,17 @@ class WatchHistory
         return $this;
     }
 
-    public function getUserHistory(): ?User
+    public function getUserWatchHistory(): ?User
     {
-        return $this->userHistory;
+        return $this->userWatchHistory;
     }
 
-    public function setUserHistory(?User $userHistory): static
+    public function setUserWatchHistory(?User $userWatchHistory): static
     {
-        $this->userHistory = $userHistory;
+        $this->userWatchHistory = $userWatchHistory;
 
         return $this;
     }
+
+
 }

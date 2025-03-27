@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Enum\CommentStatusEnum;
 use App\Repository\CommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -26,6 +28,30 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     private ?Media $media = null;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'comments')]
+    private ?self $parentComment = null;
+
+    /**
+     * @var Collection<int, self>
+     */
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parentComment')]
+    private Collection $comments;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childComment')]
+    private ?self $comment = null;
+
+    /**
+     * @var Collection<int, self>
+     */
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'comment')]
+    private Collection $childComment;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+        $this->childComment = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -76,6 +102,90 @@ class Comment
     public function setMedia(?Media $media): static
     {
         $this->media = $media;
+
+        return $this;
+    }
+
+    public function getParentComment(): ?self
+    {
+        return $this->parentComment;
+    }
+
+    public function setParentComment(?self $parentComment): static
+    {
+        $this->parentComment = $parentComment;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(self $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setParentComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(self $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getParentComment() === $this) {
+                $comment->setParentComment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getComment(): ?self
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?self $comment): static
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getChildComment(): Collection
+    {
+        return $this->childComment;
+    }
+
+    public function addChildComment(self $childComment): static
+    {
+        if (!$this->childComment->contains($childComment)) {
+            $this->childComment->add($childComment);
+            $childComment->setComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChildComment(self $childComment): static
+    {
+        if ($this->childComment->removeElement($childComment)) {
+            // set the owning side to null (unless already changed)
+            if ($childComment->getComment() === $this) {
+                $childComment->setComment(null);
+            }
+        }
 
         return $this;
     }

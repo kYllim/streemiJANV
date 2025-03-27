@@ -1,0 +1,4 @@
+App\Entity\Season:
+  season_{1..5}:
+    serie: '@serie{1..5}'
+    seasonNumber: <numberBetween(1, 10)>

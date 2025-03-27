@@ -1,0 +1,16 @@
+App\Entity\Media:
+  media_{1..10}:
+    title: <sentence(3)>
+    short_description: <text(100)>
+    long_description: <text(500)>
+    release_date: <date()>
+    cover_image: <imageUrl()>
+    media_type: <randomElement(["movie", "serie"])>
+    staff:
+      - { role: "Director", name: <name()> }
+      - { role: "Producer", name: <name()> }
+      - { role: "Screenwriter", name: <name()> }
+    casting:
+      - { character: "Hero", actor: <name()> }
+      - { character: "Villain", actor: <name()> }
+      - { character: "Sidekick", actor: <name()> }
